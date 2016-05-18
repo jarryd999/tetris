@@ -4,7 +4,7 @@ class Tetris {
 
 		// This example code draws a horizontal bar 4 squares long.
 		board.spawnPiece(5);
-
+		board.set(5, 1, 2);
 		board.print();
 
 		String input = TetrisUtils.getInput();
@@ -19,6 +19,9 @@ class Tetris {
 			board.print();
 		} else
 			System.out.println(input);
+
+		// board.movePiece('r');
+		// board.print();
 	}
 
 }
@@ -127,75 +130,53 @@ class Board {
 		int[][] newCoords = new int[4][2];
 		int[][] coords = piece.coords;
 
-		// left
-		if (direction == 'l') {
-			// loop through and set new x coord, if less than 0 (out of bounds),
-			// return
-			for (int i = 0; i < 4; i++) {
-				newCoords[i][0] = coords[i][0] - 1;
+		boolean shouldAnchor = false;
+		for (int i = 0; i < 4; i++) {
+			int x = coords[i][0];
+			int y = coords[i][1];
 
+			// left
+			if (direction == 'l') {
 				// check left bounds
-				if (newCoords[i][0] < 0) {
+				if (x <= 0 || board[y][x - 1] == 2) {
 					return;
 				}
-				newCoords[i][1] = coords[i][1];
+
+				newCoords[i][0] = x - 1;
+				newCoords[i][1] = y;
 			}
 
-			// if reached end of loop, not out of bounds, update board and set
-			// new coords
-			this.unsetPiece(piece.coords);
-			piece.coords = newCoords;
-			this.setPiece(piece.coords);
-		}
-
-		// right
-		if (direction == 'r') {
-			// loop through and set new x coord, if less than 0 (out of bounds),
-			// return
-			for (int i = 0; i < 4; i++) {
-				newCoords[i][0] = coords[i][0] + 1;
-
+			// right
+			else if (direction == 'r') {
 				// check right bound
-				if (newCoords[i][0] >= this.WIDTH) {
+				if (x + 1 >= this.WIDTH || board[y][x + 1] == 2) {
 					return;
 				}
-				newCoords[i][1] = coords[i][1];
+				newCoords[i][0] = x + 1;
+				newCoords[i][1] = y;
 			}
 
-			// if reached end of loop, not out of bounds, update board and set
-			// new coords
-			this.unsetPiece(piece.coords);
-			piece.coords = newCoords;
-			this.setPiece(piece.coords);
-
-		}
-
-		// down
-		if (direction == 'd') {
-			
-			// keep track of whether or not you should anchor the piece at the end of the move
-			boolean shouldAnchor = false;
-
-			for (int i = 0; i < 4; i++) {
-				// increment y coord, check for out of bounds
-				newCoords[i][1] = coords[i][1] + 1;
-
+			else if (direction == 'd') {
 				// check bottom bound
-				if (newCoords[i][1] >= this.HEIGHT) {
-					shouldAnchor = true;
+				if (y + 1 >= this.HEIGHT || board[y + 1][x] == 2) {
+					this.anchorPiece();
+					return;
+				} else {
+					newCoords[i][0] = x;
+					newCoords[i][1] = y + 1;
 				}
-				// keep the same x coords
-				newCoords[i][0] = coords[i][0];
 			}
 
-			this.unsetPiece(piece.coords);
-			piece.coords = newCoords;
-			this.setPiece(piece.coords);
-
-			// if necessary, anchor the piece
-			if (shouldAnchor)
-				this.anchorPiece();
 		}
+		// if reached end of loop, not out of bounds, update board and set
+		// new coords
+		this.unsetPiece(piece.coords);
+		piece.coords = newCoords;
+		this.setPiece(piece.coords);
+
+		// if necessary, anchor the piece
+		if (shouldAnchor)
+			this.anchorPiece();
 	}
 
 	/**
@@ -217,6 +198,44 @@ class Board {
 			int y = coords[i][0];
 			board[x][y] = 1;
 		}
+	}
+
+	/**
+	 * Determine whether or not the current piece can move
+	 * 
+	 * @param direction
+	 * @return
+	 */
+	public boolean canMove(char direction) {
+		int[][] coord = piece.coords;
+
+		for (int i = 0; i < 4; i++) {
+			int x = coord[i][1];
+			int y = coord[i][0];
+
+			switch (direction) {
+			case 'l':
+				if (x <= 0 || board[x - 1][y] == 2) {
+					return false;
+				}
+				break;
+
+			case 'r':
+				if (x >= this.WIDTH || board[x + 1][y] == 2) {
+					return false;
+				}
+				break;
+
+			case 'd':
+				if (y >= this.HEIGHT || board[x][y + 1] == 2) {
+					return false;
+				}
+			}
+
+		}
+
+		// if no obstacles detected, return true
+		return true;
 	}
 
 	/**
@@ -245,7 +264,12 @@ class Board {
 			System.out.print("|");
 			for (int col = 0; col < WIDTH; col++) {
 				int value = board[row][col];
-				System.out.print(value == 0 ? " " : "#");
+				if (value == 0)
+					System.out.print(" ");
+				else if (value == 1)
+					System.out.print("#");
+				else if (value == 2)
+					System.out.print("x");
 			}
 			System.out.println("|");
 		}
