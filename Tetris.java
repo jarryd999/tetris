@@ -1,27 +1,30 @@
 class Tetris {
 	public static void main(String[] args) {
 		Board board = new Board();
-
-		// This example code draws a horizontal bar 4 squares long.
-		board.spawnPiece(5);
-		board.set(5, 1, 2);
-		board.print();
-
-		String input = TetrisUtils.getInput();
-		if (input == TetrisUtils.LEFT) {
-			board.movePiece('l');
+		boolean gameOver = false;
+		while (!gameOver) {
+			board.spawnPiece(5);
+			board.pieceAnchored = false;
+			board.set(5, 1, 2);
 			board.print();
-		} else if (input == TetrisUtils.RIGHT) {
-			board.movePiece('r');
-			board.print();
-		} else if (input == TetrisUtils.DOWN) {
-			board.movePiece('d');
-			board.print();
-		} else
-			System.out.println(input);
 
-		// board.movePiece('r');
-		// board.print();
+			while (!board.pieceAnchored) {
+				String input = TetrisUtils.getInput();
+				if (input == TetrisUtils.LEFT) {
+					board.movePiece('l');
+					board.print();
+				} else if (input == TetrisUtils.RIGHT) {
+					board.movePiece('r');
+					board.print();
+				} else if (input == TetrisUtils.DOWN) {
+					board.movePiece('d');
+					board.print();
+				} else
+					System.out.println(input);
+			}
+			// board.movePiece('r');
+			// board.print();
+		}
 	}
 
 }
@@ -32,7 +35,8 @@ class Board {
 	// The board is represented as an array of arrays, with 10 rows and 10
 	// columns.
 	int[][] board = new int[HEIGHT][WIDTH];
-
+	boolean pieceAnchored;
+	
 	// keep a Piece item to keep track of the current moving piece
 	Piece piece;
 
@@ -57,6 +61,7 @@ class Board {
 	 * 
 	 * @param pieceType
 	 *            an integer value representing which type of piece to spawn
+	 * @return boolean if the piece can't spawn, return false to end game
 	 */
 	public void spawnPiece(int pieceType) {
 
@@ -158,13 +163,15 @@ class Board {
 
 			else if (direction == 'd') {
 				// check bottom bound
-				if (y + 1 >= this.HEIGHT || board[y + 1][x] == 2) {
+				if (y + 2 >= this.HEIGHT)
+					shouldAnchor = true;
+				else if (board[y + 1][x] == 2) {
 					this.anchorPiece();
 					return;
-				} else {
-					newCoords[i][0] = x;
-					newCoords[i][1] = y + 1;
 				}
+				newCoords[i][0] = x;
+				newCoords[i][1] = y + 1;
+
 			}
 
 		}
@@ -246,8 +253,8 @@ class Board {
 		for (int i = 0; i < 4; i++) {
 			int x = piece.coords[i][1];
 			int y = piece.coords[i][0];
-
 			board[x][y] = 2;
+			this.pieceAnchored = true;
 		}
 	}
 
