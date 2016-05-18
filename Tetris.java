@@ -11,11 +11,13 @@ class Tetris {
 		if (input == TetrisUtils.LEFT) {
 			board.movePiece('l');
 			board.print();
-		} else if (input == TetrisUtils.RIGHT){
+		} else if (input == TetrisUtils.RIGHT) {
 			board.movePiece('r');
 			board.print();
-		}
-		else
+		} else if (input == TetrisUtils.DOWN) {
+			board.movePiece('d');
+			board.print();
+		} else
 			System.out.println(input);
 	}
 
@@ -36,7 +38,8 @@ class Board {
 	}
 
 	/**
-	 * Set the board square to either have a piece or not (0/1)
+	 * Set the board square to be empty (0), contain part of the current piece
+	 * (1), or an anchored piece (2)
 	 * 
 	 * @param x
 	 * @param y
@@ -122,24 +125,27 @@ class Board {
 	 */
 	public void movePiece(char direction) {
 		int[][] newCoords = new int[4][2];
+		int[][] coords = piece.coords;
 
 		// left
 		if (direction == 'l') {
 			// loop through and set new x coord, if less than 0 (out of bounds),
 			// return
 			for (int i = 0; i < 4; i++) {
-				newCoords[i][0] = piece.coords[i][0] - 1;
+				newCoords[i][0] = coords[i][0] - 1;
+
+				// check left bounds
 				if (newCoords[i][0] < 0) {
 					return;
 				}
-				newCoords[i][1] = piece.coords[i][1];
+				newCoords[i][1] = coords[i][1];
 			}
 
 			// if reached end of loop, not out of bounds, update board and set
 			// new coords
 			this.unsetPiece(piece.coords);
 			piece.coords = newCoords;
-			this.setPiece(newCoords);
+			this.setPiece(piece.coords);
 		}
 
 		// right
@@ -147,18 +153,48 @@ class Board {
 			// loop through and set new x coord, if less than 0 (out of bounds),
 			// return
 			for (int i = 0; i < 4; i++) {
-				newCoords[i][0] = piece.coords[i][0] + 1;
-				if (newCoords[i][0] > this.WIDTH - 1) {
+				newCoords[i][0] = coords[i][0] + 1;
+
+				// check right bound
+				if (newCoords[i][0] >= this.WIDTH) {
 					return;
 				}
-				newCoords[i][1] = piece.coords[i][1];
+				newCoords[i][1] = coords[i][1];
 			}
 
 			// if reached end of loop, not out of bounds, update board and set
 			// new coords
 			this.unsetPiece(piece.coords);
 			piece.coords = newCoords;
-			this.setPiece(newCoords);
+			this.setPiece(piece.coords);
+
+		}
+
+		// down
+		if (direction == 'd') {
+			
+			// keep track of whether or not you should anchor the piece at the end of the move
+			boolean shouldAnchor = false;
+
+			for (int i = 0; i < 4; i++) {
+				// increment y coord, check for out of bounds
+				newCoords[i][1] = coords[i][1] + 1;
+
+				// check bottom bound
+				if (newCoords[i][1] >= this.HEIGHT) {
+					shouldAnchor = true;
+				}
+				// keep the same x coords
+				newCoords[i][0] = coords[i][0];
+			}
+
+			this.unsetPiece(piece.coords);
+			piece.coords = newCoords;
+			this.setPiece(piece.coords);
+
+			// if necessary, anchor the piece
+			if (shouldAnchor)
+				this.anchorPiece();
 		}
 	}
 
@@ -180,6 +216,19 @@ class Board {
 			int x = coords[i][1];
 			int y = coords[i][0];
 			board[x][y] = 1;
+		}
+	}
+
+	/**
+	 * Will mark the current piece coordinates as anchored on the board double
+	 * array
+	 */
+	public void anchorPiece() {
+		for (int i = 0; i < 4; i++) {
+			int x = piece.coords[i][1];
+			int y = piece.coords[i][0];
+
+			board[x][y] = 2;
 		}
 	}
 
