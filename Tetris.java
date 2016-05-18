@@ -1,11 +1,9 @@
 class Tetris {
 	public static void main(String[] args) {
 		Board board = new Board();
-		boolean gameOver = false;
-		while (!gameOver) {
-			board.spawnPiece(5);
+		board.spawnPiece(5);
+		while (!board.gameOver) {
 			board.pieceAnchored = false;
-			board.set(5, 1, 2);
 			board.print();
 
 			while (!board.pieceAnchored) {
@@ -19,11 +17,12 @@ class Tetris {
 				} else if (input == TetrisUtils.DOWN) {
 					board.movePiece('d');
 					board.print();
-				} else
-					System.out.println(input);
+				}
 			}
 			// board.movePiece('r');
 			// board.print();
+			int pieceType = 1 + (int)(Math.random() * 5);
+			board.spawnPiece(pieceType);
 		}
 	}
 
@@ -35,7 +34,7 @@ class Board {
 	// The board is represented as an array of arrays, with 10 rows and 10
 	// columns.
 	int[][] board = new int[HEIGHT][WIDTH];
-	boolean pieceAnchored;
+	boolean pieceAnchored, gameOver = false;
 	
 	// keep a Piece item to keep track of the current moving piece
 	Piece piece;
@@ -67,6 +66,10 @@ class Board {
 
 		// line piece
 		if (pieceType == 1) {
+			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[0][6] == 2){
+				this.gameOver = true;
+				return;
+			}
 			this.set(3, 0, 1);
 			this.set(4, 0, 1);
 			this.set(5, 0, 1);
@@ -81,6 +84,10 @@ class Board {
 
 		// square piece
 		else if (pieceType == 2) {
+			if (board[0][4] == 2 || board[0][5] == 2 || board[1][4] == 2 || board[1][5] == 2){
+				this.gameOver = true;
+				return;
+			}
 			this.set(4, 0, 1);
 			this.set(5, 0, 1);
 			this.set(4, 1, 1);
@@ -93,6 +100,10 @@ class Board {
 
 		// S-shaped piece
 		else if (pieceType == 3) {
+			if (board[0][4] == 2 || board[0][5] == 2 || board[1][3] == 2 || board[1][4] == 2){
+				this.gameOver = true;
+				return;
+			}
 			this.set(4, 0, 1);
 			this.set(5, 0, 1);
 			this.set(3, 1, 1);
@@ -104,6 +115,10 @@ class Board {
 
 		// T-shaped piece
 		else if (pieceType == 4) {
+			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[1][4] == 2){
+				this.gameOver = true;
+				return;
+			}
 			this.set(3, 0, 1);
 			this.set(4, 0, 1);
 			this.set(5, 0, 1);
@@ -115,6 +130,10 @@ class Board {
 
 		// L-shaped piece
 		else if (pieceType == 5) {
+			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[1][3] == 2){
+				this.gameOver = true;
+				return;
+			}
 			this.set(3, 0, 1);
 			this.set(4, 0, 1);
 			this.set(5, 0, 1);
@@ -163,9 +182,9 @@ class Board {
 
 			else if (direction == 'd') {
 				// check bottom bound
-				if (y + 2 >= this.HEIGHT)
+				if (y + 2 >= this.HEIGHT || board[y+2][x] == 2)
 					shouldAnchor = true;
-				else if (board[y + 1][x] == 2) {
+				if (board[y + 1][x] == 2) {
 					this.anchorPiece();
 					return;
 				}
