@@ -8,10 +8,13 @@ class Tetris {
 		board.print();
 
 		String input = TetrisUtils.getInput();
-		if (input == TetrisUtils.LEFT)
-			System.out.println("LEFT was pressed");
-		else if (input == TetrisUtils.UP)
-			System.out.println("UP was pressed");
+		if (input == TetrisUtils.LEFT) {
+			board.movePiece('l');
+			board.print();
+		} else if (input == TetrisUtils.RIGHT){
+			board.movePiece('r');
+			board.print();
+		}
 		else
 			System.out.println(input);
 	}
@@ -98,7 +101,7 @@ class Board {
 			int[][] coords = { { 3, 0 }, { 4, 0 }, { 5, 0 }, { 4, 1 } };
 			piece = new Piece(coords);
 		}
-		
+
 		// L-shaped piece
 		else if (pieceType == 5) {
 			this.set(3, 0, 1);
@@ -117,8 +120,67 @@ class Board {
 	 * @param direction
 	 *            an integer representation of how to move the piece
 	 */
-	public void movePiece(int direction) {
+	public void movePiece(char direction) {
+		int[][] newCoords = new int[4][2];
 
+		// left
+		if (direction == 'l') {
+			// loop through and set new x coord, if less than 0 (out of bounds),
+			// return
+			for (int i = 0; i < 4; i++) {
+				newCoords[i][0] = piece.coords[i][0] - 1;
+				if (newCoords[i][0] < 0) {
+					return;
+				}
+				newCoords[i][1] = piece.coords[i][1];
+			}
+
+			// if reached end of loop, not out of bounds, update board and set
+			// new coords
+			this.unsetPiece(piece.coords);
+			piece.coords = newCoords;
+			this.setPiece(newCoords);
+		}
+
+		// right
+		if (direction == 'r') {
+			// loop through and set new x coord, if less than 0 (out of bounds),
+			// return
+			for (int i = 0; i < 4; i++) {
+				newCoords[i][0] = piece.coords[i][0] + 1;
+				if (newCoords[i][0] > this.WIDTH - 1) {
+					return;
+				}
+				newCoords[i][1] = piece.coords[i][1];
+			}
+
+			// if reached end of loop, not out of bounds, update board and set
+			// new coords
+			this.unsetPiece(piece.coords);
+			piece.coords = newCoords;
+			this.setPiece(newCoords);
+		}
+	}
+
+	/**
+	 * Used to remove a piece when moving
+	 * 
+	 * @param p
+	 */
+	public void unsetPiece(int[][] coords) {
+		for (int i = 0; i < 4; i++) {
+			int x = coords[i][1];
+			int y = coords[i][0];
+			board[x][y] = 0;
+		}
+	}
+
+	public void setPiece(int[][] coords) {
+		for (int i = 0; i < 4; i++) {
+			int x = coords[i][1];
+			int y = coords[i][0];
+			board[x][y] = 1;
+		}
 	}
 
 	/*
