@@ -1,7 +1,11 @@
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
 class Tetris {
 	public static void main(String[] args) {
 		Board board = new Board();
-		board.spawnPiece(5);
+		board.spawnPiece();
 		while (!board.gameOver) {
 			board.pieceAnchored = false;
 			board.print();
@@ -21,8 +25,7 @@ class Tetris {
 			}
 			// board.movePiece('r');
 			// board.print();
-			int pieceType = 1 + (int)(Math.random() * 5);
-			board.spawnPiece(pieceType);
+			board.spawnPiece();
 		}
 	}
 
@@ -62,7 +65,10 @@ class Board {
 	 *            an integer value representing which type of piece to spawn
 	 * @return boolean if the piece can't spawn, return false to end game
 	 */
-	public void spawnPiece(int pieceType) {
+	public void spawnPiece() {
+		
+		int pieceType = 1 + (int)(Math.random() * 5);
+		pieceType = 2;
 
 		// line piece
 		if (pieceType == 1) {
@@ -269,13 +275,30 @@ class Board {
 	 * array
 	 */
 	public void anchorPiece() {
+		TreeSet<Integer> potentialLinesCleared = new TreeSet<Integer>();
 		for (int i = 0; i < 4; i++) {
 			int x = piece.coords[i][1];
 			int y = piece.coords[i][0];
 			board[x][y] = 2;
 			this.pieceAnchored = true;
+			potentialLinesCleared.add(y);
+		}
+		
+		for (Integer i : potentialLinesCleared){
+			boolean clearLine = true;
+			for (int j = 0; j < this.WIDTH; j++){
+				if (board[i][j] == 0)
+					clearLine = false;
+			}
+			System.out.println("Shift em down");
+			if (clearLine){
+				for (int j = 0; j < this.WIDTH; j++){
+					board[i][j] = 0;
+				}
+			}
 		}
 	}
+	
 
 	/*
 	 * Prints the contents of the board and draws a border around it.
