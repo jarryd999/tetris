@@ -1,4 +1,5 @@
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -38,7 +39,7 @@ class Board {
 	// columns.
 	int[][] board = new int[HEIGHT][WIDTH];
 	boolean pieceAnchored, gameOver = false;
-	
+
 	// keep a Piece item to keep track of the current moving piece
 	Piece piece;
 
@@ -66,13 +67,13 @@ class Board {
 	 * @return boolean if the piece can't spawn, return false to end game
 	 */
 	public void spawnPiece() {
-		
-		int pieceType = 1 + (int)(Math.random() * 5);
-		pieceType = 2;
+
+		int pieceType = 1 + (int) (Math.random() * 5);
+//		pieceType = 2;
 
 		// line piece
 		if (pieceType == 1) {
-			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[0][6] == 2){
+			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[0][6] == 2) {
 				this.gameOver = true;
 				return;
 			}
@@ -90,7 +91,7 @@ class Board {
 
 		// square piece
 		else if (pieceType == 2) {
-			if (board[0][4] == 2 || board[0][5] == 2 || board[1][4] == 2 || board[1][5] == 2){
+			if (board[0][4] == 2 || board[0][5] == 2 || board[1][4] == 2 || board[1][5] == 2) {
 				this.gameOver = true;
 				return;
 			}
@@ -106,7 +107,7 @@ class Board {
 
 		// S-shaped piece
 		else if (pieceType == 3) {
-			if (board[0][4] == 2 || board[0][5] == 2 || board[1][3] == 2 || board[1][4] == 2){
+			if (board[0][4] == 2 || board[0][5] == 2 || board[1][3] == 2 || board[1][4] == 2) {
 				this.gameOver = true;
 				return;
 			}
@@ -121,7 +122,7 @@ class Board {
 
 		// T-shaped piece
 		else if (pieceType == 4) {
-			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[1][4] == 2){
+			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[1][4] == 2) {
 				this.gameOver = true;
 				return;
 			}
@@ -136,7 +137,7 @@ class Board {
 
 		// L-shaped piece
 		else if (pieceType == 5) {
-			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[1][3] == 2){
+			if (board[0][3] == 2 || board[0][4] == 2 || board[0][5] == 2 || board[1][3] == 2) {
 				this.gameOver = true;
 				return;
 			}
@@ -188,9 +189,9 @@ class Board {
 
 			else if (direction == 'd') {
 				// check bottom bound
-				if (y + 2 >= this.HEIGHT || board[y+2][x] == 2)
-					shouldAnchor = true;
-				if (board[y + 1][x] == 2) {
+//				if (y + 1 >= this.HEIGHT)
+//					shouldAnchor = true;
+				if (y + 1 >= this.HEIGHT || board[y + 1][x] == 2) {
 					this.anchorPiece();
 					return;
 				}
@@ -275,30 +276,53 @@ class Board {
 	 * array
 	 */
 	public void anchorPiece() {
-		TreeSet<Integer> potentialLinesCleared = new TreeSet<Integer>();
+		LinkedList<Integer> linesToClear = new LinkedList<Integer>();
+
 		for (int i = 0; i < 4; i++) {
 			int x = piece.coords[i][1];
 			int y = piece.coords[i][0];
+
 			board[x][y] = 2;
 			this.pieceAnchored = true;
-			potentialLinesCleared.add(y);
 		}
+
 		
-		for (Integer i : potentialLinesCleared){
-			boolean clearLine = true;
-			for (int j = 0; j < this.WIDTH; j++){
-				if (board[i][j] == 0)
-					clearLine = false;
-			}
-			System.out.println("Shift em down");
-			if (clearLine){
-				for (int j = 0; j < this.WIDTH; j++){
-					board[i][j] = 0;
+		checkCompletedLines();
+		
+	}
+
+	public void checkCompletedLines(){
+		for (int i = this.HEIGHT - 1; i >= 0; i--) {
+			boolean skipLine = false;
+			for (int j = 0; j < this.WIDTH; j++) {
+				if (board[i][j] == 0) {
+					skipLine = true;
+					continue;
 				}
 			}
+			if (skipLine)
+				continue;
+			else{
+				shiftLinesAbove(i);
+				i++;
+			}
+			
 		}
 	}
-	
+	public void shiftLinesAbove(int y) {
+
+		for (int i = y; i > 0; i--) {
+			for (int j = 0; j < this.WIDTH; j++) {
+				board[i][j] = board[i - 1][j];
+			}
+		}
+		
+		//clear the top line
+		for (int j = 0; j < this.WIDTH; j++){
+			board[0][j] = 0;
+		}
+
+	}
 
 	/*
 	 * Prints the contents of the board and draws a border around it.
